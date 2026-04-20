@@ -46,3 +46,9 @@ class QuerySubmittedPayload(BaseModel):
     """Payload schema for the 'query.submitted' topic"""
     query_id: str
     text: str
+
+class AnnotationCorrectedPayload(BaseModel):
+    """Payload schema for the 'annotation.corrected' topic"""
+    image_id: str
+    # The corrected list of objects/bounding boxes
+    objects: List[BoundingBox]
