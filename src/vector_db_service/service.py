@@ -1,7 +1,7 @@
 import faiss
 import numpy as np
 from src.core.messaging import EventPublisher, EventSubscriber
-from src.core.events import BaseEvent
+from src.core.events import BaseEvent, QueryCompletedPayload, SearchResult
 
 DIMENSION = 3
 
@@ -77,19 +77,20 @@ def run_vector_db_service():
             # Map the FAISS integer IDs back to the string image_ids
             results = []
             for i, faiss_id in enumerate(match_ids[0]):
-                if faiss_id != -1: # -1 means FAISS didn't find enough neighbors
+                if faiss_id != -1: 
                     matched_image = id_to_image.get(faiss_id, "unknown")
-                    results.append({
-                        "image_id": matched_image,
-                        "distance": float(distances[0][i])
-                    })
+                    # FIXED: Append SearchResult models instead of raw dicts
+                    results.append(SearchResult(
+                        image_id=matched_image,
+                        distance=float(distances[0][i])
+                    ))
             
-            # Broadcast the results back to the CLI
-            out_payload = {
-                "query_id": query_id,
-                "results": results
-            }
-            out_event = BaseEvent(topic="query.completed", payload=out_payload)
+            # Using Pydantic Model instead of raw dictionary (gemini)
+            out_payload = QueryCompletedPayload(
+                query_id=query_id,
+                results=results
+            )
+            out_event = BaseEvent(topic="query.completed", payload=out_payload.model_dump())
             publisher.publish(out_event)
             print(f"[VectorDB] Published 'query.completed' with {len(results)} matches.")
             

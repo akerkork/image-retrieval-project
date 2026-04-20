@@ -52,3 +52,19 @@ class AnnotationCorrectedPayload(BaseModel):
     image_id: str
     # The corrected list of objects/bounding boxes
     objects: List[BoundingBox]
+
+class QueryEmbeddingCreatedPayload(BaseModel):
+    """Payload schema for the 'query_embedding.created' topic"""
+    query_id: str
+    embedding: List[float]
+    k: int = 5
+
+class SearchResult(BaseModel):
+    """Helper schema for individual search results"""
+    image_id: str
+    distance: float
+
+class QueryCompletedPayload(BaseModel):
+    """Payload schema for the 'query.completed' topic"""
+    query_id: str
+    results: List[SearchResult]

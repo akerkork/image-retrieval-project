@@ -1,6 +1,6 @@
 import time
 from src.core.messaging import EventPublisher, EventSubscriber
-from src.core.events import BaseEvent, EmbeddingCreatedPayload
+from src.core.events import BaseEvent, EmbeddingCreatedPayload, QueryEmbeddingCreatedPayload
 
 def run_embedding_service():
     subscriber = EventSubscriber()
@@ -40,17 +40,17 @@ def run_embedding_service():
             text = event.payload.get("text")
             
             print(f"\n[EmbeddingService] Vectorizing search query: '{text}'...")
-            time.sleep(0.5) # Simulate NLP model time
+            time.sleep(0.5)
             
-            # Create a dummy vector slightly offset from our image vect so that FAISS will find it as a close match
             query_vector = [0.10, -0.40, 0.85] 
             
-            out_payload = {
-                "query_id": query_id,
-                "embedding": query_vector,
-                "k": 3 # Ask FAISS for the top 3 closest matches
-            }
-            out_event = BaseEvent(topic="query_embedding.created", payload=out_payload)
+            # Using Pydantic Model instead of raw dictionary (gemini)
+            payload = QueryEmbeddingCreatedPayload(
+                query_id=query_id,
+                embedding=query_vector,
+                k=3
+            )
+            out_event = BaseEvent(topic="query_embedding.created", payload=payload.model_dump())
             publisher.publish(out_event)
             print(f"[EmbeddingService] Published 'query_embedding.created' for query {query_id}.")
 
