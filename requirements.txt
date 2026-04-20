@@ -1,3 +1,6 @@
 redis
 pydantic
 pytest
+pymongo
+faiss-cpu
+numpy

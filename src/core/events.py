@@ -8,6 +8,7 @@ class BaseEvent(BaseModel):
     """
     The standard event envelope required for all messages in the system.
     """
+    type: str = "event"
     topic: str
     # Automatically generate a unique UUID if one isn't provided
     event_id: UUID = Field(default_factory=uuid4)
