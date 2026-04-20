@@ -9,12 +9,15 @@ def run_vector_db_service():
     subscriber = EventSubscriber()
     publisher = EventPublisher()
     
-    # 1Initialize the FAISS Index
+    # Initialize the FAISS Index
     index = faiss.IndexFlatL2(DIMENSION)
     
     # State management for ID mapping
     id_to_image = {}
     current_faiss_id = 0
+    
+    # Store event IDs we've already seen, advice from Gemini
+    processed_event_ids = set()
     
     # Subscribe to Flow 1 (indexing) and Flow 2 (searching)
     subscriber.subscribe(["embedding.created", "query_embedding.created"])
@@ -22,9 +25,22 @@ def run_vector_db_service():
     
     for event in subscriber.listen():
         
+        # If we've seen this event_id, ignore it completely (Gemini)
+        if event.event_id in processed_event_ids:
+            print(f"[VectorDB] Ignored duplicate event: {event.event_id}")
+            continue
+            
         # FLOW 1: Ingestion and indexing
         if event.topic == "embedding.created":
             image_id = event.payload.get("image_id")
+            
+            # Domain-level idempotency: Ensure we don't index the same image twice 
+            # even if it comes in a slightly different event envelope (Gemini)
+            if image_id in id_to_image.values():
+                 print(f"[VectorDB] Image {image_id} is already indexed. Skipping.")
+                 processed_event_ids.add(event.event_id)
+                 continue
+
             raw_vector = event.payload.get("embedding")
             
             # We reshape the 1D list into a 1x3 array
@@ -40,6 +56,9 @@ def run_vector_db_service():
             print(f"[VectorDB] Total vectors in FAISS index: {index.ntotal}")
             
             current_faiss_id += 1
+            
+            # Mark this event as processed
+            processed_event_ids.add(event.event_id)
             
         # FLOW 2: Retrieval
         elif event.topic == "query_embedding.created":
@@ -73,6 +92,9 @@ def run_vector_db_service():
             out_event = BaseEvent(topic="query.completed", payload=out_payload)
             publisher.publish(out_event)
             print(f"[VectorDB] Published 'query.completed' with {len(results)} matches.")
+            
+            # Mark this event as processed
+            processed_event_ids.add(event.event_id)
 
 if __name__ == "__main__":
     run_vector_db_service()
