@@ -1,58 +1,60 @@
-import time
+import os
+import google.generativeai as genai
 from src.core.messaging import EventPublisher, EventSubscriber
 from src.core.events import BaseEvent, EmbeddingCreatedPayload, QueryEmbeddingCreatedPayload
+
+genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
 def run_embedding_service():
     subscriber = EventSubscriber()
     publisher = EventPublisher()
     
-    # Subscribe to both inference and search
     subscriber.subscribe(["inference.completed", "query.submitted"])
     print("[EmbeddingService] Listening for events...")
     
     for event in subscriber.listen():
         
-        # FLOW 1: image objects
+        # FLOW 1: Embed Image Objects
         if event.topic == "inference.completed":
             image_id = event.payload.get("image_id")
             objects = event.payload.get("objects", [])
             
-            print(f"\n[EmbeddingService] Generating embeddings for {len(objects)} object(s) in {image_id}...")
-            time.sleep(1.5) 
-            
             for idx, obj in enumerate(objects):
-                # Dummy vector for the image object
-                dummy_vector = [0.12, -0.45, 0.88] 
+                label = obj.get("label", "")
+                
+                # Call Gemini Embedding API
+                result = genai.embed_content(
+                    model="models/text-embedding-004",
+                    content=label
+                )
                 
                 payload = EmbeddingCreatedPayload(
                     image_id=image_id, 
                     object_id=idx, 
-                    embedding=dummy_vector
+                    embedding=result['embedding']
                 )
                 out_event = BaseEvent(topic="embedding.created", payload=payload.model_dump())
                 publisher.publish(out_event)
-                
-            print(f"[EmbeddingService] Published 'embedding.created' for {image_id}.")
+                print(f"[EmbeddingService] Embedded object '{label}' for {image_id}.")
 
-        # FLOW 2: Natural Language Search
+        # FLOW 2: Embed Natural Language Search Query
         elif event.topic == "query.submitted":
             query_id = event.payload.get("query_id")
             text = event.payload.get("text")
             
-            print(f"\n[EmbeddingService] Vectorizing search query: '{text}'...")
-            time.sleep(0.5)
+            result = genai.embed_content(
+                model="models/text-embedding-004",
+                content=text
+            )
             
-            query_vector = [0.10, -0.40, 0.85] 
-            
-            # Using Pydantic Model instead of raw dictionary (gemini)
             payload = QueryEmbeddingCreatedPayload(
                 query_id=query_id,
-                embedding=query_vector,
+                embedding=result['embedding'],
                 k=3
             )
             out_event = BaseEvent(topic="query_embedding.created", payload=payload.model_dump())
             publisher.publish(out_event)
-            print(f"[EmbeddingService] Published 'query_embedding.created' for query {query_id}.")
+            print(f"[EmbeddingService] Embedded search query {query_id}.")
 
 if __name__ == "__main__":
     run_embedding_service()

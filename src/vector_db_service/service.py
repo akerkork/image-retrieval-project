@@ -3,7 +3,7 @@ import numpy as np
 from src.core.messaging import EventPublisher, EventSubscriber
 from src.core.events import BaseEvent, QueryCompletedPayload, SearchResult
 
-DIMENSION = 3
+DIMENSION = 768
 
 def run_vector_db_service():
     subscriber = EventSubscriber()

@@ -7,7 +7,7 @@ from src.core.events import BaseEvent, QuerySubmittedPayload
 def listen_for_notifications():
     """Background thread to listen for system notifications like completed uploads."""
     subscriber = EventSubscriber()
-    # Subscribe to the topic specified in the LaTeX diagram
+    # Subscribe to the topic
     subscriber.subscribe(["annotation.stored"])
     
     for event in subscriber.listen():
@@ -31,7 +31,7 @@ def run_search_cli():
     
     try:
         while True:
-            # Get user input (Main Thread blocks here)
+            # Get user input
             query_text = input("\nEnter search topic (or type 'exit' to quit): ").strip()
             
             if query_text.lower() == 'exit':
