@@ -4,3 +4,5 @@ pytest
 pymongo
 faiss-cpu
 numpy
+google-genai
+pillow
