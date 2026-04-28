@@ -10,7 +10,7 @@ class BaseEvent(BaseModel):
     """
     type: str = "event"
     topic: str
-    # Automatically generate a unique UUID if one isn't provided
+    # Automatically generate a unique UUID if one isn't provided 
     event_id: UUID = Field(default_factory=uuid4)
     # Automatically set the timestamp to current UTC time
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
