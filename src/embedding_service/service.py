@@ -1,5 +1,6 @@
 import os
 from google import genai
+from google.genai import types # Added to configure embedding output
 from src.core.messaging import EventPublisher, EventSubscriber
 from src.core.events import BaseEvent, EmbeddingCreatedPayload, QueryEmbeddingCreatedPayload
 
@@ -22,10 +23,11 @@ def run_embedding_service():
             for idx, obj in enumerate(objects):
                 label = obj.get("label", "")
                 
-                # New SDK format for embeddings
+                # Use the new model and truncate down to FAISS's 768 limit
                 result = client.models.embed_content(
-                    model="text-embedding-004",
-                    contents=label
+                    model="gemini-embedding-2",
+                    contents=label,
+                    config=types.EmbedContentConfig(output_dimensionality=768)
                 )
                 
                 payload = EmbeddingCreatedPayload(
@@ -42,9 +44,11 @@ def run_embedding_service():
             query_id = event.payload.get("query_id")
             text = event.payload.get("text")
             
+            # Use the new model and truncate down to FAISS's 768 limit
             result = client.models.embed_content(
-                model="text-embedding-004",
-                contents=text
+                model="gemini-embedding-2",
+                contents=text,
+                config=types.EmbedContentConfig(output_dimensionality=768)
             )
             
             payload = QueryEmbeddingCreatedPayload(
