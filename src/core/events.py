@@ -17,6 +17,10 @@ class BaseEvent(BaseModel):
     # The actual data
     payload: Dict[str, Any]
 
+class UploadRequestedPayload(BaseModel):
+    """Payload schema for the 'upload.requested' topic"""
+    file_path: str
+    source: str = "cli_user"
 
 # Specific Payload Schemas
 class ImageSubmittedPayload(BaseModel):
