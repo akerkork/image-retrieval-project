@@ -1,13 +1,11 @@
 import os
 import json
-import google.generativeai as genai
+from google import genai
 from PIL import Image
 from src.core.messaging import EventPublisher, EventSubscriber
 from src.core.events import BaseEvent, InferenceCompletedPayload, BoundingBox
 
-# Configure the SDK
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-model = genai.GenerativeModel('gemini-1.5-flash')
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 def run_inference_service():
     subscriber = EventSubscriber()
@@ -22,20 +20,20 @@ def run_inference_service():
         print(f"\n[InferenceService] Running Gemini Inference on {image_id}...")
         
         try:
-            # Load the image using Pillow
             img = Image.open(image_path)
-            
-            # Force the model to output strict JSON matching BoundingBox schema
             prompt = """
             Detect the main objects in this image. 
             Return ONLY a raw JSON array. Do not use markdown formatting or code blocks.
             Format: [{"label": "string", "bbox": [ymin, xmin, ymax, xmax], "conf": 0.99}]
             """
             
-            response = model.generate_content([prompt, img])
+            # Using the new models.generate_content method
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=[prompt, img]
+            )
             raw_text = response.text.strip()
             
-            # Clean up markdown if the model accidentally includes it
             if raw_text.startswith('```json'):
                 raw_text = raw_text[7:-3].strip()
                 
