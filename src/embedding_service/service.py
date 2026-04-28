@@ -15,7 +15,7 @@ def run_embedding_service():
     
     for event in subscriber.listen():
         
-        # FLOW 1: Embed Image Objects
+        # Embed Image Objects
         if event.topic == "inference.completed":
             image_id = event.payload.get("image_id")
             objects = event.payload.get("objects", [])
@@ -39,12 +39,12 @@ def run_embedding_service():
                 publisher.publish(out_event)
                 print(f"[EmbeddingService] Embedded object '{label}' for {image_id}.")
 
-        # FLOW 2: Embed Natural Language Search Query
+        # Embed Natural Language Search Query
         elif event.topic == "query.submitted":
             query_id = event.payload.get("query_id")
             text = event.payload.get("text")
             
-            # Use the new model and truncate down to FAISS's 768 limit
+            # Truncate down to FAISS's 768 limit
             result = client.models.embed_content(
                 model="gemini-embedding-2",
                 contents=text,

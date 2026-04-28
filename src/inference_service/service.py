@@ -27,7 +27,6 @@ def run_inference_service():
             Format: [{"label": "string", "bbox": [ymin, xmin, ymax, xmax], "conf": 0.99}]
             """
             
-            # Using the new models.generate_content method
             response = client.models.generate_content(
                 model='gemini-2.5-flash',
                 contents=[prompt, img]

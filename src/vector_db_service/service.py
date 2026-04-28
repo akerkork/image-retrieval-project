@@ -34,8 +34,7 @@ def run_vector_db_service():
         if event.topic == "embedding.created":
             image_id = event.payload.get("image_id")
             
-            # Domain-level idempotency: Ensure we don't index the same image twice 
-            # even if it comes in a slightly different event envelope (Gemini)
+            # Ensure we don't index the same image twice even if it comes in a slightly different event envelope (Gemini)
             if image_id in id_to_image.values():
                  print(f"[VectorDB] Image {image_id} is already indexed. Skipping.")
                  processed_event_ids.add(event.event_id)

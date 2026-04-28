@@ -24,7 +24,7 @@ def run_upload_service():
             print(f"[UploadService] ERROR: File not found at {original_path}")
             continue
             
-        # Generate a unique ID
+        # Generate an unique ID
         image_id = f"img_{uuid.uuid4().hex[:8]}"
         
         # Copy the file into the Upload Service's managed directory

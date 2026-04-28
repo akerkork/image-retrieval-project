@@ -14,7 +14,7 @@ def run_document_db_service():
     publisher = EventPublisher()
     collection = get_db_collection()
     
-    # Subscribe to all 3 incoming flows for the database
+    # Subscribe to all incoming flows for the database
     subscriber.subscribe(["image.submitted", "inference.completed", "annotation.corrected"])
     print("[DocumentDB] Connected to MongoDB. Listening for events...")
     
@@ -51,7 +51,7 @@ def run_document_db_service():
                 )
                 publisher.publish(out_event)
                 
-        # Handle manual corrections (gemini)
+        # Handle manual corrections
         elif event.topic == "annotation.corrected":
             print(f"\n[DocumentDB] Processing manual correction for {image_id}...")
             update_data = {
@@ -63,7 +63,6 @@ def run_document_db_service():
             
             if result.modified_count > 0 or result.matched_count > 0:
                 print(f"[DocumentDB] MongoDB correction successful for {image_id}.")
-                # Optional: You can broadcast annotation.stored again here if needed
                 out_event = BaseEvent(
                     topic="annotation.stored", 
                     payload={"image_id": image_id, "status": "corrected"}
