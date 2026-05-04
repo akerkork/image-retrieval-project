@@ -4,7 +4,7 @@
 The Event-Driven Image Annotation and Retrieval System is a modular, asynchronous pipeline that processes images, detects objects, and allows users to search for images using natural language. It utilizes a publish-subscribe (Pub/Sub) messaging architecture to decouple services, MongoDB for flexible document storage, FAISS for high-performance vector search, and the Google Gemini API for object detection and semantic embeddings.
 
 ## Video link 
-YOUTUBE LINK WILL GO HERE
+[YOUTUBE LINK](https://youtu.be/FWJb-_6TxbA)
 
 ## Key Features
 * **Asynchronous Event-Driven Architecture**: Fully decoupled microservices communicate via Redis Pub/Sub, ensuring non-blocking operations and system scalability.
